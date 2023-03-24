@@ -67,7 +67,8 @@ class ActorCNN(nn.Module):
         x = self.bn2(self.lr(self.conv2(x)))
         x = self.bn3(self.lr(self.conv3(x)))
         x = self.bn4(self.lr(self.conv4(x)))
-        x = x.view(x.size(0), -1)  # flatten
+        x = x.reshape(x.size(0), -1)  # flatten
+        # x = x.reshape(-1, x.size(0))
         x = self.dropout(x)
         x = self.lr(self.lin1(x))
 
@@ -129,7 +130,7 @@ class CriticCNN(nn.Module):
         x = self.bn2(self.lr(self.conv2(x)))
         x = self.bn3(self.lr(self.conv3(x)))
         x = self.bn4(self.lr(self.conv4(x)))
-        x = x.view(x.size(0), -1)  # flatten
+        x = x.reshape(x.size(0), -1)  # flatten
         x = self.lr(self.lin1(x))
         x = self.lr(self.lin2(torch.cat([x, actions], 1)))  # c
         x = self.lin3(x)
@@ -193,7 +194,8 @@ class DDPG(object):
             reward = torch.FloatTensor(sample["reward"]).to(device)
 
             # Compute the target Q value
-            target_Q = self.critic_target(next_state, self.actor_target(next_state))
+            x = self.actor_target(next_state)
+            target_Q = self.critic_target(next_state, x)
             target_Q = reward + (done * discount * target_Q).detach()
 
             # Get current Q estimate

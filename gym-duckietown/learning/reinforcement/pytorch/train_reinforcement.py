@@ -1,6 +1,7 @@
 import ast
 import argparse
 import logging
+from rl.policy import BoltzmannQPolicy
 
 import os
 import numpy as np
@@ -8,12 +9,24 @@ import numpy as np
 # Duckietown Specific
 from reinforcement.pytorch.ddpg import DDPG
 from reinforcement.pytorch.utils import seed, evaluate_policy, ReplayBuffer
-from utils.env import launch_env
-from utils.wrappers import NormalizeWrapper, ImgWrapper, \
+from utilss.env import launch_env
+from utilss.wrappers import NormalizeWrapper, ImgWrapper, \
     DtRewardWrapper, ActionWrapper, ResizeWrapper
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+def calculate_intention_allignment_reward(policy, action):
+    reward = 0
+    if policy == "forward":
+        reward = action[0]
+    elif policy == "left":
+        reward = -1 * action[1]
+    elif policy == "right":
+        reward =  action[1]
+    else:
+        return 0
+    return reward
 
 def _train(args):   
     if not os.path.exists("./results"):
@@ -38,15 +51,19 @@ def _train(args):
 
     state_dim = env.observation_space.shape
     action_dim = env.action_space.shape[0]
+    print(action_dim)
     max_action = float(env.action_space.high[0])
 
     # Initialize policy
     policy = DDPG(state_dim, action_dim, max_action, net_type="cnn")
+    # policy = BoltzmannQPolicy()
     replay_buffer = ReplayBuffer(args.replay_buffer_max_size)
     print("Initialized DDPG")
     
     # Evaluate untrained policy
+    print("before policy evaluations")
     evaluations= [evaluate_policy(env, policy)]
+    print("after policy evaluations")
    
     total_timesteps = 0
     timesteps_since_eval = 0
@@ -99,6 +116,9 @@ def _train(args):
                           ).clip(env.action_space.low, env.action_space.high)
 
         # Perform action
+        # curr_pos = info['curr_pos']
+        # policy = get_policy(curr_pos)
+        # intention_allignment_reward = calculate_intention_allignment_reward(policy, action)
         new_obs, reward, done, _ = env.step(action)
 
         if episode_timesteps >= args.env_timesteps:
@@ -127,7 +147,7 @@ if __name__ == '__main__':
     parser.add_argument("--seed", default=0, type=int)  # Sets Gym, PyTorch and Numpy seeds
     parser.add_argument("--start_timesteps", default=1e4, type=int)  # How many time steps purely random policy is run for
     parser.add_argument("--eval_freq", default=5e3, type=float)  # How often (time steps) we evaluate
-    parser.add_argument("--max_timesteps", default=1e6, type=float)  # Max time steps to run environment for
+    parser.add_argument("--max_timesteps", default=1e4, type=float)  # Max time steps to run environment for
     parser.add_argument("--save_models", action="store_true", default=True)  # Whether or not models are saved
     parser.add_argument("--expl_noise", default=0.1, type=float)  # Std of Gaussian exploration noise
     parser.add_argument("--batch_size", default=32, type=int)  # Batch size for both actor and critic

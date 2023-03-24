@@ -6,7 +6,7 @@ import numpy as np
 class ResizeWrapper(gym.ObservationWrapper):
     def __init__(self, env=None, shape=(120, 160, 3)):
         super(ResizeWrapper, self).__init__(env)
-        self.observation_space.shape = shape
+        # self.observation_space.shape.set(shape)
         self.observation_space = spaces.Box(
             self.observation_space.low[0, 0, 0],
             self.observation_space.high[0, 0, 0],

@@ -91,6 +91,7 @@ if args.manual:
             action *= 3
 
         obs, reward, done, info = env.step(action)
+        print(obs.shape)
         print(f"current pose = {info['curr_pos']}, step count = {env.unwrapped.step_count}, step reward = {reward:.3f}")
 
         env.render()
@@ -105,7 +106,6 @@ else:
     for speed, steering in actions:
         obs, reward, done, info = env.step([speed, steering])
         curr_pos = info['curr_pos']
-
         print(f"current pose = {info['curr_pos']}, step count = {env.unwrapped.step_count}, step reward = {reward:.3f}")
 
         env.render()

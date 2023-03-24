@@ -7,8 +7,8 @@ import numpy as np
 
 # Duckietown Specific
 from reinforcement.pytorch.ddpg import DDPG
-from utils.env import launch_env
-from utils.wrappers import NormalizeWrapper, ImgWrapper, \
+from utilss.env import launch_env
+from utilss.wrappers import NormalizeWrapper, ImgWrapper, \
     DtRewardWrapper, ActionWrapper, ResizeWrapper
 
 
