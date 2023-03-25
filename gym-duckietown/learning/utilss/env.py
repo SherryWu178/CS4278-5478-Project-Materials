@@ -15,7 +15,10 @@ def launch_env(id=None):
             camera_height=480,
             accept_start_angle_deg=4, # start close to straight
             full_transparency=True,
-            distortion=True,
+            distortion=False,
+            user_tile_start="0,1",
+            goal_tile="15,1"
+
         )
     else:
         env = gym.make(id)
